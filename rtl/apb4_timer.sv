@@ -31,10 +31,10 @@
 
 
 // fix 32b timer
-module apb_timer #(
+module apb4_timer #(
     parameter TIM_NUM        = 2
 ) (
-    apb_if                       apb,
+    apb4_if                       apb4,
     logic  [(TIM_NUM * 2) - 1:0] irq_o
 );
 
