@@ -29,8 +29,6 @@
 `define PRESCALER_STOPBIT 'd5
 `define ENABLE_BIT 'd0
 
-
-// fix 32b timer
 module apb4_timer #(
     parameter TIM_NUM        = 2
 ) (
