@@ -29,7 +29,7 @@
  * TIM_CNT:
  * BITS:   | 31:0 |
  * FIELDS: | CNT  |
- * PERMS:  | RW   |
+ * PERMS:  | none |
  * ------------------------------------
  * TIM_CMP:
  * BITS:   | 31:0 |
@@ -107,9 +107,9 @@ module apb4_timer (
     if (s_apb4_wr_hdshk && s_apb_addr == `TIM_CTRL) begin
       s_tim_ctrl_d = apb4.pwdata;
     end else if (s_normal_mode) begin
-        if(s_tim_cnt_q == s_tim_cmp_q) begin
-          s_tim_ctrl_d[0] = 1'b1;
-        end
+      if (s_tim_cnt_q == s_tim_cmp_q) begin
+        s_tim_ctrl_d[0] = 1'b1;
+      end
     end
   end
 
@@ -133,7 +133,7 @@ module apb4_timer (
     if (s_apb4_rd_hdshk) begin
       unique case (s_apb_addr)
         `TIM_CTRL: apb.prdata = s_tim_ctrl_q;
-        `TIM_CNT:  apb.prdata = s_tim_cnt_q;
+        `TIM_PSCR: apb4.prdata = s_tim_pscr_q;
         `TIM_CMP:  apb.prdata = s_tim_cmp_q;
       endcase
     end
