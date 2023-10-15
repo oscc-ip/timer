@@ -61,7 +61,7 @@ module apb4_timer (
 
   always_comb begin
     s_tim_pscr_d = s_tim_pscr_q;
-    if (s_apb4_wr_hdshk && s_apb_addr == `TIM_DIV) begin
+    if (s_apb4_wr_hdshk && s_apb_addr == `TIM_PSCR) begin
       s_tim_pscr_d = apb4.pwdata < 2 ? 32'd2 : abp4.pwdata;
     end
   end
