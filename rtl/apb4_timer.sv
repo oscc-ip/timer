@@ -48,7 +48,7 @@ module apb4_timer (
   logic [31:0] s_tim_pscr_d, s_tim_pscr_q;
   logic [31:0] s_tim_cnt_d, s_tim_cnt_q;
   logic [31:0] s_tim_cmp_d, s_tim_cmp_q;
-  logic s_valid, s_ready, s_done, s_tc_clk;
+  logic s_valid, s_ready, s_done, s_tr_clk;
   logic s_apb4_wr_hdshk, s_apb4_rd_hdshk, s_normal_mode;
   logic s_ov_irq;
 
@@ -81,7 +81,7 @@ module apb4_timer (
       .div_valid_i(s_valid),
       .div_ready_o(s_ready),
       .div_done_o (s_done),
-      .clk_o      (s_tc_clk)
+      .clk_o      (s_tr_clk)
   );
 
   always_comb begin
@@ -96,7 +96,7 @@ module apb4_timer (
   end
 
   dffr #(32) u_tim_cnt_dffr (
-      s_tc_clk,
+      s_tr_clk,
       apb4.hresetn,
       s_tim_cnt_d,
       s_tim_cnt_q
