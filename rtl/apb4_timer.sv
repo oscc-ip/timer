@@ -52,9 +52,9 @@ module apb4_timer (
   logic s_apb4_wr_hdshk, s_apb4_rd_hdshk, s_normal_mode;
   logic s_ov_irq;
 
-  assign s_apb_addr      = apb.paddr[5:2];
-  assign s_apb4_wr_hdshk = apb.psel && apb.penable && apb.pwrite;
-  assign s_apb4_rd_hdshk = apb.psel && apb.penable && (~apb.pwrite);
+  assign s_apb_addr      = apb4.paddr[5:2];
+  assign s_apb4_wr_hdshk = apb4.psel && apb4.penable && apb4.pwrite;
+  assign s_apb4_rd_hdshk = apb4.psel && apb4.penable && (~apb4.pwrite);
   assign s_normal_mode   = s_tim_ctrl_q[2] & s_done;
   assign s_ov_irq        = s_tim_ctrl_q[1] & s_tim_ctrl_q[0];
   assign irq_o           = s_ov_irq;
@@ -129,18 +129,18 @@ module apb4_timer (
   );
 
   always_comb begin
-    apb.prdata = '0;
+    apb4.prdata = '0;
     if (s_apb4_rd_hdshk) begin
       unique case (s_apb_addr)
-        `TIM_CTRL: apb.prdata = s_tim_ctrl_q;
+        `TIM_CTRL: apb4.prdata = s_tim_ctrl_q;
         `TIM_PSCR: apb4.prdata = s_tim_pscr_q;
-        `TIM_CMP:  apb.prdata = s_tim_cmp_q;
+        `TIM_CMP:  apb4.prdata = s_tim_cmp_q;
       endcase
     end
   end
 
-  assign apb.pready  = 1'b1;
-  assign apb.pslverr = 1'b0;
+  assign apb4.pready  = 1'b1;
+  assign apb4.pslverr = 1'b0;
 
 endmodule
 
