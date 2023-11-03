@@ -67,16 +67,16 @@ module apb4_timer (
   end
 
   dffr #(32) u_tim_pscr_dffr (
-      .clk_i  (apb4.hclk),
-      .rst_n_i(apb4.hresetn),
+      .clk_i  (apb4.pclk),
+      .rst_n_i(apb4.presetn),
       .dat_i  (s_tim_pscr_d),
       .dat_o  (s_tim_pscr_q)
   );
 
   assign s_valid = s_apb4_wr_hdshk && s_apb_addr == `TIM_PSCR && s_done;
   clk_int_even_div_simple u_clk_int_even_div_simple (
-      .clk_i      (apb4.hclk),
-      .rst_n_i    (apb4.hresetn),
+      .clk_i      (apb4.pclk),
+      .rst_n_i    (apb4.presetn),
       .div_i      (s_tim_pscr_q),
       .div_valid_i(s_valid),
       .div_ready_o(s_ready),
@@ -97,7 +97,7 @@ module apb4_timer (
 
   dffr #(32) u_tim_cnt_dffr (
       s_tr_clk,
-      apb4.hresetn,
+      apb4.presetn,
       s_tim_cnt_d,
       s_tim_cnt_q
   );
@@ -114,16 +114,16 @@ module apb4_timer (
   end
 
   dffr #(32) u_tim_ctrl_dffr (
-      apb4.hclk,
-      apb4.hresetn,
+      apb4.pclk,
+      apb4.presetn,
       s_tim_ctrl_d,
       s_tim_ctrl_q
   );
 
   assign s_tim_cmp_d = (s_apb4_wr_hdshk && s_apb_addr == `TIM_CMP) ? apb4.pwdata : s_tim_cmp_q;
   dffr #(32) u_tim_cmp_dffr (
-      apb4.hclk,
-      apb4.hresetn,
+      apb4.pclk,
+      apb4.presetn,
       s_tim_cmp_d,
       s_tim_cmp_q
   );
