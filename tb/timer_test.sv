@@ -16,26 +16,32 @@
 
 class TimerTest extends APB4Master;
   string                 name;
+  int                    wr_val;
   virtual apb4_if.master apb4;
+  virtual timer_if.tb    timer;
 
-  extern function new(string name = "timer_test", virtual apb4_if.master apb4);
+  extern function new(string name = "timer_test", virtual apb4_if.master apb4,
+                      virtual timer_if.tb timer);
   extern task automatic test_reset_reg();
   extern task automatic test_wr_rd_reg(input bit [31:0] run_times = 1000);
+  extern task automatic test_clk_div(input bit [31:0] run_times = 10);
   extern task automatic test_irq(input bit [31:0] run_times = 1000);
 endclass
 
-function TimerTest::new(string name, virtual apb4_if.master apb4);
+function TimerTest::new(string name, virtual apb4_if.master apb4, virtual timer_if.tb timer);
   super.new("apb4_master", apb4);
-  this.name = name;
-  this.apb4 = apb4;
+  this.name   = name;
+  this.wr_val = 0;
+  this.apb4   = apb4;
+  this.timer  = timer;
 endfunction
 
 task automatic TimerTest::test_reset_reg();
   super.test_reset_reg();
   // verilog_format: off
-  // this.rd_check(`GPIO_PADDIR_ADDR, "PADDIR REG", 32'b0 & this.gpio_mask, Helper::EQUL, Helper::INFO);
-  // this.rd_check(`GPIO_PADIN_ADDR, "PADIN REG", 32'b0 & this.gpio_mask, Helper::EQUL, Helper::INFO);
-  // this.rd_check(`GPIO_PADOUT_ADDR, "PADOUT REG", 32'b0 & this.gpio_mask, Helper::EQUL, Helper::INFO);
+  this.rd_check(`TIM_CTRL_ADDR, "CTRL REG", 32'b0 & {`TIM_CTRL_WIDTH{1'b1}}, Helper::EQUL, Helper::INFO);
+  this.rd_check(`TIM_PSCR_ADDR, "PSCR REG", 32'd2 & {`TIM_PSCR_WIDTH{1'b1}}, Helper::EQUL, Helper::INFO);
+  this.rd_check(`TIM_CMP_ADDR, "CMP REG", 32'b0 & {`TIM_CMP_WIDTH{1'b1}}, Helper::EQUL, Helper::INFO);
   // verilog_format: on
 endtask
 
@@ -43,14 +49,34 @@ task automatic TimerTest::test_wr_rd_reg(input bit [31:0] run_times = 1000);
   super.test_wr_rd_reg();
   // verilog_format: off
   for (int i = 0; i < run_times; i++) begin
-    // this.wr_rd_check(`GPIO_PADDIR_ADDR, "PADDIR REG", $random & this.gpio_mask, Helper::EQUL);
-    // this.wr_rd_check(`GPIO_PADOUT_ADDR, "PADOUT REG", $random & this.gpio_mask, Helper::EQUL);
-    // this.wr_rd_check(`GPIO_INTEN_ADDR, "INTEN REG", $random & this.gpio_mask, Helper::EQUL);
-    // this.wr_rd_check(`GPIO_INTTYPE0_ADDR, "INTTYPE0 REG", $random & this.gpio_mask, Helper::EQUL);
-    // this.wr_rd_check(`GPIO_INTTYPE1_ADDR, "INTTYPE1 REG", $random & this.gpio_mask, Helper::EQUL);
-    // this.wr_rd_check(`GPIO_IOFCFG_ADDR, "IOFCFG REG", $random & this.gpio_mask, Helper::EQUL);
+    this.wr_val = $random & {{(`TIM_CTRL_WIDTH-1){1'b1}}, 1'b0};
+    this.write(`TIM_CTRL_ADDR, this.wr_val);
+    this.read(`TIM_CTRL_ADDR);
+    Helper::check("CTRL REG", super.rd_data & {{(`TIM_CTRL_WIDTH-1){1'b1}}, 1'b0}, this.wr_val, Helper::EQUL);
+    this.wr_rd_check(`TIM_CMP_ADDR, "CMP REG", $random & {`TIM_CMP_WIDTH{1'b1}}, Helper::EQUL);
   end
   // verilog_format: on
 endtask
 
+task automatic TimerTest::test_clk_div(input bit [31:0] run_times = 10);
+  $display("=== [test timer clk div] ===");
+  repeat (200) @(posedge apb4.pclk);
+  this.write(`TIM_CTRL_ADDR, 32'b0 & {`TIM_CTRL_WIDTH{1'b1}});
+  repeat (200) @(posedge apb4.pclk);
+  this.write(`TIM_PSCR_ADDR, 32'd10 & {`TIM_PSCR_WIDTH{1'b1}});
+  repeat (200) @(posedge apb4.pclk);
+  this.write(`TIM_PSCR_ADDR, 32'd4 & {`TIM_PSCR_WIDTH{1'b1}});
+  repeat (200) @(posedge apb4.pclk);
+  for (int i = 0; i < run_times; i++) begin
+    this.wr_val = ($random % 20) & {`TIM_PSCR_WIDTH{1'b1}};
+    if (this.wr_val < 2) this.wr_val = 2;
+    if (this.wr_val % 2) this.wr_val -= 1;
+    this.wr_rd_check(`TIM_PSCR_ADDR, "PSCR REG", this.wr_val, Helper::EQUL);
+    repeat (200) @(posedge apb4.pclk);
+  end
+endtask
+
+task automatic TimerTest::test_irq(input bit [31:0] run_times = 1000);
+  super.test_irq();
+endtask
 `endif

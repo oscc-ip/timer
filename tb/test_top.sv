@@ -13,7 +13,8 @@
 `include "timer_define.sv"
 
 program automatic test_top (
-    apb4_if.master apb4
+    apb4_if.master apb4,
+    timer_if.tb   timer
 );
 
   string wave_name = "default.fsdb";
@@ -33,11 +34,14 @@ program automatic test_top (
     sim_config();
     @(posedge apb4.presetn);
     Helper::print("tb init done");
-    timer_hdl = new("timer_test", apb4);
-    // timer_hdl.init();
-    // timer_hdl.test_reset_reg();
-    // timer_hdl.test_wr_rd_reg();
-    // timer_hdl.test_irq();
+    timer_hdl = new("timer_test", apb4, timer);
+    timer_hdl.init();
+
+    timer_hdl.test_reset_reg();
+    timer_hdl.test_wr_rd_reg();
+    timer_hdl.test_clk_div();
+    timer_hdl.test_irq();
+
     Helper::end_banner();
     #20000 $finish;
   end

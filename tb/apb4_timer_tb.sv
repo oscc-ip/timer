@@ -37,7 +37,15 @@ module apb4_timer_tb ();
       rst_n_i
   );
 
-  test_top u_test_top (u_apb4_if);
-  apb4_timer u_apb4_timer (u_apb4_if);
+  timer_if u_timer_if ();
+
+  test_top u_test_top (
+      .apb4 (u_apb4_if.master),
+      .timer(u_timer_if.tb)
+  );
+  apb4_timer u_apb4_timer (
+      .apb4 (u_apb4_if.slave),
+      .timer(u_timer_if.dut)
+  );
 
 endmodule
