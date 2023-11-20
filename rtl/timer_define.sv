@@ -13,10 +13,10 @@
 
 /* register mapping
  * TIM_CTRL:
- * BITS:   | 31:4 | 3    | 2  | 1   | 0    |
- * FIELDS: | RES  | MODE | EN | ETR | OVIE |
- * PERMS:  | NONE | RW   | RW | RW  | RW   |
- * -----------------------------------------
+ * BITS:   | 31:6 | 5:4 | 3   | 2  | 1   | 0    |
+ * FIELDS: | RES  | ETM | IDM | EN | ETR | OVIE |
+ * PERMS:  | NONE | RW  | RW  | RW | RW  | RW   |
+ * ----------------------------------------------
  * TIM_PSCR:
  * BITS:   | 31:20 | 19:0 |
  * FIELDS: | RES   | PSCR |
@@ -40,8 +40,8 @@
 */
 // 50MHz * 1
 // min: 1/50 = 0.02us = 20ns
-// max: 100/2^20 * 2^32us = 100*2^12us = 409600us = 409.6ms
-// timing range: [20ns ~ 409.6ms]
+// max: 2^20 / 10^8 * 2^32s = 45035996s = 521day
+// timing range: [20ns ~ 521day]
 // verilog_format: off
 `define TIM_CTRL 4'b0000 // BASEADDR + 0x00
 `define TIM_PSCR 4'b0001 // BASEADDR + 0x04

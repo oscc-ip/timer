@@ -12,6 +12,7 @@
 `include "clk_int_div.sv"
 `include "cdc_sync.sv"
 `include "counter.sv"
+`include "edge_det.sv"
 `include "timer_define.sv"
 
 module apb4_timer (
@@ -26,17 +27,29 @@ module apb4_timer (
   logic [`TIM_STAT_WIDTH-1:0] s_tim_stat_d, s_tim_stat_q;
   logic s_valid, s_done, s_inclk, s_tr_clk, s_ov_irq, s_cnt_ov;
   logic s_apb4_wr_hdshk, s_apb4_rd_hdshk, s_normal_mode;
+  logic s_irq_d, s_irq_q;
+  logic s_norm_trg1, s_norm_trg2;
+  logic s_cap_in, s_cap_rise, s_cap_fall;
 
-  assign s_apb4_addr = apb4.paddr[5:2];
+  assign s_apb4_addr     = apb4.paddr[5:2];
   assign s_apb4_wr_hdshk = apb4.psel && apb4.penable && apb4.pwrite;
   assign s_apb4_rd_hdshk = apb4.psel && apb4.penable && (~apb4.pwrite);
-  assign apb4.pready = 1'b1;
-  assign apb4.pslverr = 1'b0;
+  assign apb4.pready     = 1'b1;
+  assign apb4.pslverr    = 1'b0;
 
-  assign s_tr_clk = s_tim_ctrl_q[1] ? timer.exclk_i : s_inclk;
-  assign s_normal_mode = s_tim_ctrl_q[2] & s_done;
-  assign s_ov_irq = s_tim_ctrl_q[1] & s_tim_stat_q[0];
-  assign timer.irq_o = s_ov_irq;
+  assign s_tr_clk        = s_tim_ctrl_q[1] ? timer.exclk_i : s_inclk;
+  assign s_normal_mode   = s_tim_ctrl_q[2] & s_done;
+  assign s_ov_irq        = s_tim_ctrl_q[0] & s_tim_stat_q[0];
+  assign timer.irq_o     = s_irq_q;
+
+  edge_det #(2, 1) u_edge_det (
+      apb4.pclk,
+      apb4.presetn,
+      timer.capch_i,
+      s_cap_in,
+      s_cap_rise,
+      s_cap_fall
+  );
 
   assign s_tim_ctrl_d = (s_apb4_wr_hdshk && s_apb4_addr == `TIM_CTRL) ? apb4.pwdata[`TIM_CTRL_WIDTH-1:0]: s_tim_ctrl_q;
   dffr #(`TIM_CTRL_WIDTH) u_tim_ctrl_dffr (
@@ -71,12 +84,20 @@ module apb4_timer (
       .clk_o      (s_inclk)
   );
 
+  cdc_sync_det #(2, 1) u_cnt_cdc_sync (
+      s_tr_clk,
+      apb4.presetn,
+      s_normal_mode,
+      s_norm_trg1,
+      s_norm_trg2
+  );
+
   counter #(`TIM_CNT_WIDTH) u_tim_cnt_counter (
       .clk_i  (s_tr_clk),
       .rst_n_i(apb4.presetn),
       .clr_i  (~s_normal_mode),
       .en_i   (s_normal_mode),
-      .load_i (s_cnt_ov),
+      .load_i ((~s_norm_trg2 && s_norm_trg1) || s_cnt_ov),
       .down_i (s_tim_ctrl_q[3]),
       .dat_i  (s_tim_cmp_q),
       .dat_o  (),
@@ -104,6 +125,22 @@ module apb4_timer (
       apb4.presetn,
       s_tim_stat_d,
       s_tim_stat_q
+  );
+
+
+  always_comb begin
+    s_irq_d = s_irq_q;
+    if (~s_irq_q && s_ov_irq) begin
+      s_irq_d = 1'b1;
+    end else if (s_irq_q && s_apb4_rd_hdshk && s_apb4_addr == `TIM_STAT) begin
+      s_irq_d = 1'b0;
+    end
+  end
+  dffr #(1) u_irq_dffr (
+      apb4.pclk,
+      apb4.presetn,
+      s_irq_d,
+      s_irq_q
   );
 
   always_comb begin
