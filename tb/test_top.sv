@@ -40,6 +40,8 @@ program automatic test_top (
     timer_hdl.test_reset_reg();
     timer_hdl.test_wr_rd_reg();
     timer_hdl.test_clk_div();
+    timer_hdl.test_inc_cnt();
+    timer_hdl.test_dec_cnt();
     timer_hdl.test_irq();
 
     Helper::end_banner();

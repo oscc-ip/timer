@@ -25,6 +25,8 @@ class TimerTest extends APB4Master;
   extern task automatic test_reset_reg();
   extern task automatic test_wr_rd_reg(input bit [31:0] run_times = 1000);
   extern task automatic test_clk_div(input bit [31:0] run_times = 10);
+  extern task automatic test_inc_cnt(input bit [31:0] run_times = 10);
+  extern task automatic test_dec_cnt(input bit [31:0] run_times = 10);
   extern task automatic test_irq(input bit [31:0] run_times = 1000);
 endclass
 
@@ -42,6 +44,7 @@ task automatic TimerTest::test_reset_reg();
   this.rd_check(`TIM_CTRL_ADDR, "CTRL REG", 32'b0 & {`TIM_CTRL_WIDTH{1'b1}}, Helper::EQUL, Helper::INFO);
   this.rd_check(`TIM_PSCR_ADDR, "PSCR REG", 32'd2 & {`TIM_PSCR_WIDTH{1'b1}}, Helper::EQUL, Helper::INFO);
   this.rd_check(`TIM_CMP_ADDR, "CMP REG", 32'b0 & {`TIM_CMP_WIDTH{1'b1}}, Helper::EQUL, Helper::INFO);
+  this.rd_check(`TIM_STAT_ADDR, "STAT REG", 32'b0 & {`TIM_STAT_WIDTH{1'b1}}, Helper::EQUL, Helper::INFO);
   // verilog_format: on
 endtask
 
@@ -76,7 +79,37 @@ task automatic TimerTest::test_clk_div(input bit [31:0] run_times = 10);
   end
 endtask
 
+task automatic TimerTest::test_inc_cnt(input bit [31:0] run_times = 10);
+  $display("=== [test timer inc cnt] ===");
+  this.write(`TIM_CTRL_ADDR, 32'b0 & {`TIM_CTRL_WIDTH{1'b1}});
+  this.write(`TIM_PSCR_ADDR, 32'd4 & {`TIM_PSCR_WIDTH{1'b1}});
+  this.write(`TIM_CMP_ADDR, -32'hF & {`TIM_CMP_WIDTH{1'b1}});
+  this.write(`TIM_CTRL_ADDR, 32'b0101 & {`TIM_CTRL_WIDTH{1'b1}});
+  repeat (200) @(posedge apb4.pclk);
+endtask
+
+task automatic TimerTest::test_dec_cnt(input bit [31:0] run_times = 10);
+  $display("=== [test timer dec cnt] ===");
+  this.write(`TIM_CTRL_ADDR, 32'b0 & {`TIM_CTRL_WIDTH{1'b1}});
+  this.write(`TIM_PSCR_ADDR, 32'd4 & {`TIM_PSCR_WIDTH{1'b1}});
+  this.write(`TIM_CMP_ADDR, 32'hF & {`TIM_CMP_WIDTH{1'b1}});
+  this.write(`TIM_CTRL_ADDR, 32'b1101 & {`TIM_CTRL_WIDTH{1'b1}});
+  repeat (200) @(posedge apb4.pclk);
+endtask
+
 task automatic TimerTest::test_irq(input bit [31:0] run_times = 1000);
   super.test_irq();
+  this.read(`TIM_STAT_ADDR);
+  this.write(`TIM_CTRL_ADDR, 32'b0 & {`TIM_CTRL_WIDTH{1'b1}});
+  this.write(`TIM_PSCR_ADDR, 32'd4 & {`TIM_PSCR_WIDTH{1'b1}});
+  this.write(`TIM_CMP_ADDR, -32'hF & {`TIM_CMP_WIDTH{1'b1}});
+  this.write(`TIM_CTRL_ADDR, 32'b0101 & {`TIM_CTRL_WIDTH{1'b1}});
+  repeat (200) @(posedge apb4.pclk);
+  
+  this.write(`TIM_CTRL_ADDR, 32'b0100 & {`TIM_CTRL_WIDTH{1'b1}});
+  this.read(`TIM_STAT_ADDR);
+  $display("super.rd_data: %h", super.rd_data);
+  repeat (200) @(posedge apb4.pclk);
+  this.write(`TIM_CTRL_ADDR, 32'b0101 & {`TIM_CTRL_WIDTH{1'b1}});  
 endtask
 `endif
