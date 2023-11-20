@@ -20,13 +20,12 @@ module apb4_timer (
 );
 
   logic [3:0] s_apb4_addr;
-  logic [31:0] s_tim_ctrl_d, s_tim_ctrl_q;
-  logic [31:0] s_tim_pscr_d, s_tim_pscr_q;
-  logic [31:0] s_tim_cnt_d, s_tim_cnt_q;
-  logic [31:0] s_tim_cmp_d, s_tim_cmp_q;
-  logic s_valid, s_done, s_tr_clk;
+  logic [`TIM_CTRL_WIDTH-1:0] s_tim_ctrl_d, s_tim_ctrl_q;
+  logic [`TIM_PSCR_WIDTH-1:0] s_tim_pscr_d, s_tim_pscr_q;
+  logic [`TIM_CNT_WIDTH-1:0] s_tim_cnt_d, s_tim_cnt_q;
+  logic [`TIM_CMP_WIDTH-1:0] s_tim_cmp_d, s_tim_cmp_q;
+  logic s_valid, s_done, s_tr_clk, s_ov_irq;
   logic s_apb4_wr_hdshk, s_apb4_rd_hdshk, s_normal_mode;
-  logic s_ov_irq;
 
   assign s_apb4_addr     = apb4.paddr[5:2];
   assign s_apb4_wr_hdshk = apb4.psel && apb4.penable && apb4.pwrite;
@@ -41,11 +40,11 @@ module apb4_timer (
   always_comb begin
     s_tim_pscr_d = s_tim_pscr_q;
     if (s_apb4_wr_hdshk && s_apb4_addr == `TIM_PSCR) begin
-      s_tim_pscr_d = apb4.pwdata < 32'd2 ? 32'd2 : apb4.pwdata;
+      s_tim_pscr_d = apb4.pwdata[`TIM_PSCR_WIDTH-1:0] < `PSCR_MIN_VAL ? `PSCR_MIN_VAL : apb4.pwdata[`TIM_PSCR_WIDTH-1:0];
     end
   end
 
-  dffr #(32) u_tim_pscr_dffr (
+  dffr #(`TIM_PSCR_WIDTH) u_tim_pscr_dffr (
       .clk_i  (apb4.pclk),
       .rst_n_i(apb4.presetn),
       .dat_i  (s_tim_pscr_d),
@@ -53,7 +52,7 @@ module apb4_timer (
   );
 
   assign s_valid = s_apb4_wr_hdshk && s_apb4_addr == `TIM_PSCR && s_done;
-  clk_int_even_div_simple #(32) u_clk_int_even_div_simple (
+  clk_int_even_div_simple #(`TIM_PSCR_WIDTH) u_clk_int_even_div_simple (
       .clk_i      (apb4.pclk),
       .rst_n_i    (apb4.presetn),
       .div_i      (s_tim_pscr_q),
@@ -74,7 +73,7 @@ module apb4_timer (
     end
   end
 
-  dffr #(32) u_tim_cnt_dffr (
+  dffr #(`TIM_CNT_WIDTH) u_tim_cnt_dffr (
       s_tr_clk,
       apb4.presetn,
       s_tim_cnt_d,
@@ -84,25 +83,25 @@ module apb4_timer (
   always_comb begin
     s_tim_ctrl_d = s_tim_ctrl_q;
     if (s_apb4_wr_hdshk && s_apb4_addr == `TIM_CTRL) begin
-      s_tim_ctrl_d = apb4.pwdata;
+      s_tim_ctrl_d = apb4.pwdata[`TIM_CTRL_WIDTH-1:0];
     end else if (s_normal_mode) begin
       if (s_tim_cnt_q == s_tim_cmp_q) begin
         s_tim_ctrl_d[0] = 1'b1;
       end else begin
-        s_tim_ctrl_d[0] = 1'b0;
+        s_tim_ctrl_d[0] = 1'b0; // TODO:
       end
     end
   end
 
-  dffr #(32) u_tim_ctrl_dffr (
+  dffr #(`TIM_CTRL_WIDTH) u_tim_ctrl_dffr (
       apb4.pclk,
       apb4.presetn,
       s_tim_ctrl_d,
       s_tim_ctrl_q
   );
 
-  assign s_tim_cmp_d = (s_apb4_wr_hdshk && s_apb4_addr == `TIM_CMP) ? apb4.pwdata : s_tim_cmp_q;
-  dffr #(32) u_tim_cmp_dffr (
+  assign s_tim_cmp_d = (s_apb4_wr_hdshk && s_apb4_addr == `TIM_CMP) ? apb4.pwdata[`TIM_CMP_WIDTH-1:0] : s_tim_cmp_q;
+  dffr #(`TIM_CMP_WIDTH) u_tim_cmp_dffr (
       apb4.pclk,
       apb4.presetn,
       s_tim_cmp_d,
@@ -113,9 +112,9 @@ module apb4_timer (
     apb4.prdata = '0;
     if (s_apb4_rd_hdshk) begin
       unique case (s_apb4_addr)
-        `TIM_CTRL: apb4.prdata = s_tim_ctrl_q;
-        `TIM_PSCR: apb4.prdata = s_tim_pscr_q;
-        `TIM_CMP:  apb4.prdata = s_tim_cmp_q;
+        `TIM_CTRL: apb4.prdata[`TIM_CTRL_WIDTH-1:0] = s_tim_ctrl_q;
+        `TIM_PSCR: apb4.prdata[`TIM_PSCR_WIDTH-1:0] = s_tim_pscr_q;
+        `TIM_CMP:  apb4.prdata[`TIM_CMP_WIDTH-1:0] = s_tim_cmp_q;
         default:   apb4.prdata = '0;
       endcase
     end

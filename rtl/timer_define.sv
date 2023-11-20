@@ -43,8 +43,13 @@
 `define TIM_PSCR_ADDR {26'b0, `TIM_PSCR, 2'b00}
 `define TIM_CNT_ADDR  {26'b0, `TIM_CNT , 2'b00}
 `define TIM_CMP_ADDR  {26'b0, `TIM_CMP , 2'b00}
+
+`define TIM_CTRL_WIDTH 3
+`define TIM_PSCR_WIDTH 20
+`define TIM_CNT_WIDTH  32
+`define TIM_CMP_WIDTH  32
+
+`define PSCR_MIN_VAL  {{(`TIM_PSCR_WIDTH-2){1'b0}}, 2'd2}
 // verilog_format: on
-
-
 
 `endif
