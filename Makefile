@@ -23,6 +23,7 @@ SIM_INC ?=
 SIM_INC += +incdir+../rtl/
 SIM_INC += +incdir+../../common/rtl/
 SIM_INC += +incdir+../../common/rtl/clkrst
+SIM_INC += +incdir+../../common/rtl/cdc
 SIM_INC += +incdir+../../common/rtl/verif
 SIM_INC += +incdir+../../common/rtl/interface
 
@@ -44,7 +45,9 @@ run: comp
 wave:
 	${VERDI_TOOL} -ssf build/$(SIM_TOP).fsdb &
 
-clean :
+clean:
 	rm -rf build
+	rm -rf verdiLog
+	rm -rf novas.*
 
 .PHONY: wave clean
