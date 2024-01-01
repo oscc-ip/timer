@@ -14,7 +14,7 @@
 
 program automatic test_top (
     apb4_if.master apb4,
-    timer_if.tb   timer
+    timer_if.tb    timer
 );
 
   string wave_name = "default.fsdb";
@@ -43,7 +43,8 @@ program automatic test_top (
     timer_hdl.test_inc_cnt();
     timer_hdl.test_dec_cnt();
     timer_hdl.test_irq();
-
+    timer_hdl.test_ext_clk();
+    timer_hdl.test_ext_cap();
     Helper::end_banner();
     #20000 $finish;
   end

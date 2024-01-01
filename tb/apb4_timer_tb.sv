@@ -13,12 +13,20 @@
 
 module apb4_timer_tb ();
   localparam CLK_PEROID = 10;
-  logic rst_n_i, clk_i;
+  localparam RTC_CLK_PEROID = 50;  // sim set
+  logic rst_n_i, clk_i, rtc_clk_i;
 
   initial begin
     clk_i = 1'b0;
     forever begin
       #(CLK_PEROID / 2) clk_i <= ~clk_i;
+    end
+  end
+
+  initial begin
+    rtc_clk_i = 1'b0;
+    forever begin
+      #(RTC_CLK_PEROID / 2) rtc_clk_i <= ~rtc_clk_i;
     end
   end
 
@@ -37,7 +45,7 @@ module apb4_timer_tb ();
       rst_n_i
   );
 
-  timer_if u_timer_if ();
+  timer_if u_timer_if (rtc_clk_i);
 
   test_top u_test_top (
       .apb4 (u_apb4_if.master),
