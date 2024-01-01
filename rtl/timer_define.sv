@@ -13,30 +13,30 @@
 
 /* register mapping
  * TIM_CTRL:
- * BITS:   | 31:6 | 5:4 | 3   | 2  | 1   | 0    |
- * FIELDS: | RES  | ETM | IDM | EN | ETR | OVIE |
- * PERMS:  | NONE | RW  | RW  | RW | RW  | RW   |
- * ----------------------------------------------
+ * BITS:   | 31:8 | 7   | 6:4 | 3   | 2  | 1   | 0    |
+ * FIELDS: | RES  | EEN | ETM | IDM | EN | ETR | OVIE |
+ * PERMS:  | NONE | RW  | RW  | RW  | RW | RW  | RW   |
+ * ----------------------------------------------------
  * TIM_PSCR:
  * BITS:   | 31:20 | 19:0 |
  * FIELDS: | RES   | PSCR |
  * PERMS:  | NONE  | RW   |
- * ------------------------------------
+ * -----------------------------------------------------
  * TIM_CNT:
  * BITS:   | 31:0 |
  * FIELDS: | CNT  |
  * PERMS:  | none |
- * ------------------------------------
+ * -----------------------------------------------------
  * TIM_CMP:
  * BITS:   | 31:0 |
  * FIELDS: | CMP  |
  * PERMS:  | RW   |
- * ------------------------------------
+ * -----------------------------------------------------
  * TIM_STAT:
- * BITS:   | 31:1  | 0    |
- * FIELDS: | RES   | OVIF |
- * PERMS:  | NONE  | R    |
- * ------------------------------------
+ * BITS:   | 31:1 | 0    |
+ * FIELDS: | RES  | OVIF |
+ * PERMS:  | NONE | R    |
+ * -----------------------------------------------------
 */
 // 50MHz * 1
 // min: 1/50 = 0.02us = 20ns
@@ -55,21 +55,28 @@
 `define TIM_CMP_ADDR  {26'b0, `TIM_CMP , 2'b00}
 `define TIM_STAT_ADDR {26'b0, `TIM_STAT, 2'b00}
 
-`define TIM_CTRL_WIDTH 4
+`define TIM_CTRL_WIDTH 8
 `define TIM_PSCR_WIDTH 20
 `define TIM_CNT_WIDTH  32
 `define TIM_CMP_WIDTH  32
 `define TIM_STAT_WIDTH 1
 
-`define PSCR_MIN_VAL  {{(`TIM_PSCR_WIDTH-2){1'b0}}, 2'd2}
+`define TIM_PSCR_MIN_VAL  {{(`TIM_PSCR_WIDTH-2){1'b0}}, 2'd2}
+
+`define TIM_ETM_NONE 3'b000
+`define TIM_ETM_RISE 3'b001
+`define TIM_ETM_FALL 3'b010
+`define TIM_ETM_CLER 3'b011
+`define TIM_ETM_LOAD 3'b100
 // verilog_format: on
 
-interface timer_if ();
-  logic exclk_i;
+interface timer_if (
+    input logic exclk_i
+);
   logic capch_i;
   logic irq_o;
 
   modport dut(input exclk_i, input capch_i, output irq_o);
-  modport tb(output exclk_i, output capch_i, input irq_o);
+  modport tb(input exclk_i, output capch_i, input irq_o);
 endinterface
 `endif
