@@ -24,4 +24,4 @@
 make comp    # compile code with vcs
 make run     # compile and run test with vcs
 make wave    # open fsdb format waveform with verdi
-```# timer
+```
