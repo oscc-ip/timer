@@ -1,4 +1,4 @@
-# Timer
+# TIMER
 
 ## Features
 * Programmable prescaler
