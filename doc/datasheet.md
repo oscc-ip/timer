@@ -53,17 +53,32 @@ The `timer` IP is a fully parameterised soft IP using for some timing tasks. The
 
 reset value: `0x0000_0000`
 
-* EEN: the enable signal for seed register writing operation.
-    * `EEN = 1'b0`: writing seed register disabled
-    * `EEN = 1'b1`: writing seed register enabled
+* EEN: extern capture enable
+    * `EEN = 1'b0`: extern capture mode disabled
+    * `EEN = 1'b1`: extern capture mode enabled
 
-* ETM: the enable signal for seed register writing operation.
-    * `ETM = 2'b00`: writing seed register disabled
-    * `ETM = 2'b01`: writing seed register enabled
+* ETM: extern trigger mode
+    * `ETM = 3'b000(NONE)`: none
+    * `ETM = 3'b001(RISE)`: rise edge trigger
+    * `ETM = 3'b010(FALL)`: fall edge trigger
+    * `ETM = 3'b011(CLER)`: clear time counter
+    * `ETM = 3'b100(LOAD)`: load time counter
 
-* IDM: the enable signal for seed register writing operation.
-    * `EN = 1'b0`: writing seed register disabled
-    * `EN = 1'b1`: writing seed register enabled
+* IDM: time count direction mode
+    * `IDM = 1'b0`: count up
+    * `IDM = 1'b1`: count down
+
+* EN: time counter enable
+    * `EN = 1'b0`: time counter disabled
+    * `EN = 1'b1`: timer counter enabled
+
+* ETR: extern tick clock trigger
+    * `ETR = 1'b0`: intern clock trigger
+    * `ETR = 1'b1`: extern periodic signal trigger
+
+* OVIE: overflow interrupt enable
+    * `OVIE = 1'b0`: overflow interrupt disabled
+    * `OVIE = 1'b1`: overflow interrupt enabled
 
 #### Prescaler Reigster
 | bit | access  | description |
@@ -104,7 +119,7 @@ reset value: `0x0000_0000`
 * OVIF: the overflow interrupt flag
 
 ### Program Guide
-The software operation of `timer` is simple. These registers can be accessed by 4-byte aligned read and write. All operation can be split into **initialization and read operation**. C-like pseudocode for the initialization operation:
+These registers can be accessed by 4-byte aligned read and write. All operation can be split into **initialization and read operation**. C-like pseudocode for the initialization operation:
 ```c
 timer.CTRL.EN = 1        // enable the seed register writing
 timer.SEED = SEED_32_bit // write seed value
