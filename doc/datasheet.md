@@ -119,19 +119,28 @@ reset value: `0x0000_0000`
 * OVIF: the overflow interrupt flag
 
 ### Program Guide
-These registers can be accessed by 4-byte aligned read and write. All operation can be split into **initialization and read operation**. C-like pseudocode for the initialization operation:
+These registers can be accessed by 4-byte aligned read and write. C-like pseudocode for the initialization operation:
 ```c
-timer.CTRL.EN = 1        // enable the seed register writing
-timer.SEED = SEED_32_bit // write seed value
+timer.CTRL = 0x00000000 // reset ctrl register
+while(timer.STAT == 1); // clear irq state
+timer.PSCR = PSCR_32_bit
+timer.CMP = CMP_32_bit
 ```
-read operation:
+timing mode:
 ```c
-uint32_t val = timer.VAL // get the random number
-```
+REG_CTRL.[EN, OVIE] = 1 // enable intern counter and interrupt
 
-If wanting to stop generating valid random numbers, software need to set the value of seed register to zero:
-```c
-timer.SEED = 0x0
+// polling style
+while(timer.STAT == 0);
+
+// interrupt style
+timer_interrupt_handle() {
+    timer.CTRL.OVIE = 0   // disable interrupt
+    STAT_VAL = timer.STAT // clear interrupt flag
+    ... // do something
+    timer.CTRL.OVIE = 1   // enable interrupt
+}
+
 ```
 ### Resoureces
 ### References
