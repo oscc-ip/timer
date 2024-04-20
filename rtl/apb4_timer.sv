@@ -59,7 +59,7 @@ module apb4_timer (
   assign timer.irq_o     = s_bit_ovif;
 
   assign s_tim_ctrl_en   = s_apb4_wr_hdshk && s_apb4_addr == `TIM_CTRL;
-  assign s_tim_ctrl_d    = s_tim_ctrl_en ? apb4.pwdata[`TIM_CTRL_WIDTH-1:0] : s_tim_ctrl_q;
+  assign s_tim_ctrl_d    = apb4.pwdata[`TIM_CTRL_WIDTH-1:0];
   dffer #(`TIM_CTRL_WIDTH) u_tim_ctrl_dffer (
       apb4.pclk,
       apb4.presetn,
@@ -119,7 +119,7 @@ module apb4_timer (
   );
 
   assign s_tim_cmp_en = s_apb4_wr_hdshk && s_apb4_addr == `TIM_CMP;
-  assign s_tim_cmp_d  = s_tim_cmp_en ? apb4.pwdata[`TIM_CMP_WIDTH-1:0] : s_tim_cmp_q;
+  assign s_tim_cmp_d  = apb4.pwdata[`TIM_CMP_WIDTH-1:0];
   dffer #(`TIM_CMP_WIDTH) u_tim_cmp_dffer (
       apb4.pclk,
       apb4.presetn,

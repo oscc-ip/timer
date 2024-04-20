@@ -97,7 +97,7 @@ reset value: `0x0000_0002`
 
 reset value: `0x0000_0000`
 
-* CNT: the 32-bit count up register
+* CNT: the 32-bit extern capture counter value
 
 #### Compare Reigster
 | bit | access  | description |
