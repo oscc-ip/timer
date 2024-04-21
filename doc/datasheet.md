@@ -70,7 +70,7 @@ reset value: `0x0000_0000`
 
 * EN: time counter enable
     * `EN = 1'b0`: time counter disabled
-    * `EN = 1'b1`: timer counter enabled
+    * `EN = 1'b1`: time counter enabled
 
 * ETR: extern tick clock trigger
     * `ETR = 1'b0`: intern clock trigger
