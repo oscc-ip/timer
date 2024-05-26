@@ -1,5 +1,5 @@
 // Copyright (c) 2023 Beijing Institute of Open Source Chip
-// timer is licensed under Mulan PSL v2.
+// tmr is licensed under Mulan PSL v2.
 // You can use this software according to the terms and conditions of the Mulan PSL v2.
 // You may obtain a copy of Mulan PSL v2 at:
 //             http://license.coscl.org.cn/MulanPSL2
@@ -10,11 +10,11 @@
 
 `include "apb4_if.sv"
 `include "helper.sv"
-`include "timer_define.sv"
+`include "tmr_define.sv"
 
 program automatic test_top (
     apb4_if.master apb4,
-    timer_if.tb    timer
+    tmr_if.tb      tmr
 );
 
   string wave_name = "default.fsdb";
@@ -27,24 +27,23 @@ program automatic test_top (
     end
   endtask
 
-  TimerTest timer_hdl;
+  TMRTest tmr_hdl;
 
   initial begin
     Helper::start_banner();
     sim_config();
     @(posedge apb4.presetn);
     Helper::print("tb init done");
-    timer_hdl = new("timer_test", apb4, timer);
-    timer_hdl.init();
-
-    timer_hdl.test_reset_reg();
-    timer_hdl.test_wr_rd_reg();
-    timer_hdl.test_clk_div();
-    timer_hdl.test_inc_cnt();
-    timer_hdl.test_dec_cnt();
-    timer_hdl.test_irq();
-    timer_hdl.test_ext_clk();
-    timer_hdl.test_ext_cap();
+    tmr_hdl = new("tmr_test", apb4, tmr);
+    tmr_hdl.init();
+    tmr_hdl.test_reset_reg();
+    tmr_hdl.test_wr_rd_reg();
+    tmr_hdl.test_clk_div();
+    tmr_hdl.test_inc_cnt();
+    tmr_hdl.test_dec_cnt();
+    tmr_hdl.test_irq();
+    tmr_hdl.test_ext_clk();
+    tmr_hdl.test_ext_cap();
     Helper::end_banner();
     #20000 $finish;
   end

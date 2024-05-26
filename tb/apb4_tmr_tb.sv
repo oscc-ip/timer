@@ -1,5 +1,5 @@
 // Copyright (c) 2023 Beijing Institute of Open Source Chip
-// timer is licensed under Mulan PSL v2.
+// tmr is licensed under Mulan PSL v2.
 // You can use this software according to the terms and conditions of the Mulan PSL v2.
 // You may obtain a copy of Mulan PSL v2 at:
 //             http://license.coscl.org.cn/MulanPSL2
@@ -9,9 +9,9 @@
 // See the Mulan PSL v2 for more details.
 
 `include "apb4_if.sv"
-`include "timer_define.sv"
+`include "tmr_define.sv"
 
-module apb4_timer_tb ();
+module apb4_tmr_tb ();
   localparam CLK_PEROID = 10;
   localparam RTC_CLK_PEROID = 50;  // sim set
   logic rst_n_i, clk_i, rtc_clk_i;
@@ -45,15 +45,15 @@ module apb4_timer_tb ();
       rst_n_i
   );
 
-  timer_if u_timer_if (rtc_clk_i);
+  tmr_if u_tmr_if (rtc_clk_i);
 
   test_top u_test_top (
-      .apb4 (u_apb4_if.master),
-      .timer(u_timer_if.tb)
+      .apb4(u_apb4_if.master),
+      .tmr (u_tmr_if.tb)
   );
-  apb4_timer u_apb4_timer (
-      .apb4 (u_apb4_if.slave),
-      .timer(u_timer_if.dut)
+  apb4_tmr u_apb4_tmr (
+      .apb4(u_apb4_if.slave),
+      .tmr (u_tmr_if.dut)
   );
 
 endmodule

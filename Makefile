@@ -14,10 +14,10 @@ SIM_OPTIONS  := -full64 -debug_acc+all  +v2k -sverilog -timescale=1ns/10ps \
                 -kdb \
 
 SRC_FILE ?=
-SRC_FILE += ../rtl/apb4_timer.sv
-SRC_FILE += ../tb/timer_test.sv
+SRC_FILE += ../rtl/apb4_tmr.sv
+SRC_FILE += ../tb/tmr_test.sv
 SRC_FILE += ../tb/test_top.sv
-SRC_FILE += ../tb/apb4_timer_tb.sv
+SRC_FILE += ../tb/apb4_tmr_tb.sv
 
 SIM_INC ?=
 SIM_INC += +incdir+../rtl/
@@ -27,7 +27,7 @@ SIM_INC += +incdir+../../common/rtl/cdc
 SIM_INC += +incdir+../../common/rtl/verif
 SIM_INC += +incdir+../../common/rtl/interface
 
-SIM_APP  ?= apb4_timer
+SIM_APP  ?= apb4_tmr
 SIM_TOP  := $(SIM_APP)_tb
 
 WAVE_CFG ?= # WAVE_ON
