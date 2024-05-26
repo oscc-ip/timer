@@ -1,7 +1,7 @@
 ## Datasheet
 
 ### Overview
-The `timer` IP is a fully parameterised soft IP using for some timing tasks. The IP features an APB4 slave interface, fully compliant with the AMBA APB Protocol Specification v2.0.
+The `tmr` IP is a fully parameterised soft IP using for some timing tasks. The IP features an APB4 slave interface, fully compliant with the AMBA APB Protocol Specification v2.0.
 
 ### Feature
 * Programmable prescaler
@@ -26,10 +26,10 @@ The `timer` IP is a fully parameterised soft IP using for some timing tasks. The
 | port name | type        | description          |
 |:--------- |:------------|:---------------------|
 | apb4      | interface   | apb4 slave interface |
-| timer ->    | interface   | timer slave interface |
-| `timer.exclk_i` | input | extern periodic signal |
-| `timer.capch_i` | input | capture input |
-| `timer.irq_o` | output | interrupt output|
+| tmr ->    | interface   | timer interface |
+| `tmr.exclk_i` | input | extern periodic signal |
+| `tmr.capch_i` | input | capture input |
+| `tmr.irq_o` | output | interrupt output|
 
 ### Register
 | name | offset  | length | description |
@@ -121,24 +121,24 @@ reset value: `0x0000_0000`
 ### Program Guide
 These registers can be accessed by 4-byte aligned read and write. C-like pseudocode for the initialization operation:
 ```c
-timer.CTRL = 0x00000000 // reset ctrl register
-while(timer.STAT == 1); // clear irq state
-timer.PSCR = PSCR_32_bit
-timer.CMP = CMP_32_bit
+tmr.CTRL = 0x00000000 // reset ctrl register
+while(tmr.STAT == 1); // clear irq state
+tmr.PSCR = PSCR_32_bit
+tmr.CMP = CMP_32_bit
 ```
 timing mode:
 ```c
 REG_CTRL.[EN, OVIE] = 1 // enable intern counter and interrupt
 
 // polling style
-while(timer.STAT == 0);
+while(tmr.STAT == 0);
 
 // interrupt style
-timer_interrupt_handle() {
-    timer.CTRL.OVIE = 0   // disable interrupt
-    STAT_VAL = timer.STAT // clear interrupt flag
+tmr_interrupt_handle() {
+    tmr.CTRL.OVIE = 0   // disable interrupt
+    STAT_VAL = tmr.STAT // clear interrupt flag
     ... // do something
-    timer.CTRL.OVIE = 1   // enable interrupt
+    tmr.CTRL.OVIE = 1   // enable interrupt
 }
 
 ```
