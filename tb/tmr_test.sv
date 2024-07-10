@@ -45,7 +45,7 @@ task automatic TMRTest::test_reset_reg();
   super.test_reset_reg();
   // verilog_format: off
   this.rd_check(`TMR_CTRL_ADDR, "CTRL REG", 32'b0 & {`TMR_CTRL_WIDTH{1'b1}}, Helper::EQUL, Helper::INFO);
-  this.rd_check(`TMR_PSCR_ADDR, "PSCR REG", 32'd2 & {`TMR_PSCR_WIDTH{1'b1}}, Helper::EQUL, Helper::INFO);
+  this.rd_check(`TMR_PSCR_ADDR, "PSCR REG", 32'b0 & {`TMR_PSCR_WIDTH{1'b1}}, Helper::EQUL, Helper::INFO);
   this.rd_check(`TMR_CMP_ADDR, "CMP REG", 32'b0 & {`TMR_CMP_WIDTH{1'b1}}, Helper::EQUL, Helper::INFO);
   this.rd_check(`TMR_STAT_ADDR, "STAT REG", 32'b0 & {`TMR_STAT_WIDTH{1'b1}}, Helper::EQUL, Helper::INFO);
   // verilog_format: on
@@ -68,14 +68,12 @@ task automatic TMRTest::test_clk_div(input bit [31:0] run_times = 10);
   repeat (200) @(posedge this.apb4.pclk);
   this.write(`TMR_CTRL_ADDR, 32'b0 & {`TMR_CTRL_WIDTH{1'b1}});
   repeat (200) @(posedge this.apb4.pclk);
-  this.write(`TMR_PSCR_ADDR, 32'd10 & {`TMR_PSCR_WIDTH{1'b1}});
+  this.write(`TMR_PSCR_ADDR, 32'd9 & {`TMR_PSCR_WIDTH{1'b1}});
   repeat (200) @(posedge this.apb4.pclk);
-  this.write(`TMR_PSCR_ADDR, 32'd4 & {`TMR_PSCR_WIDTH{1'b1}});
+  this.write(`TMR_PSCR_ADDR, 32'd3 & {`TMR_PSCR_WIDTH{1'b1}});
   repeat (200) @(posedge this.apb4.pclk);
   for (int i = 0; i < run_times; i++) begin
     this.wr_val = ($random % 20) & {`TMR_PSCR_WIDTH{1'b1}};
-    if (this.wr_val < 2) this.wr_val = 2;
-    if (this.wr_val % 2) this.wr_val -= 1;
     this.wr_rd_check(`TMR_PSCR_ADDR, "PSCR REG", this.wr_val, Helper::EQUL);
     repeat (200) @(posedge this.apb4.pclk);
   end
@@ -85,7 +83,7 @@ task automatic TMRTest::test_inc_cnt(input bit [31:0] run_times = 10);
   $display("=== [test tmr inc cnt] ===");
   this.write(`TMR_CTRL_ADDR, 32'b0 & {`TMR_CTRL_WIDTH{1'b1}});
   this.read(`TMR_STAT_ADDR);  // clear irq
-  this.write(`TMR_PSCR_ADDR, 32'd4 & {`TMR_PSCR_WIDTH{1'b1}});
+  this.write(`TMR_PSCR_ADDR, 32'd3 & {`TMR_PSCR_WIDTH{1'b1}});
   this.write(`TMR_CMP_ADDR, -32'hF & {`TMR_CMP_WIDTH{1'b1}});
   this.write(`TMR_CTRL_ADDR, 32'b0101 & {`TMR_CTRL_WIDTH{1'b1}});
   repeat (200) @(posedge this.apb4.pclk);
@@ -95,7 +93,7 @@ task automatic TMRTest::test_dec_cnt(input bit [31:0] run_times = 10);
   $display("=== [test tmr dec cnt] ===");
   this.write(`TMR_CTRL_ADDR, 32'b0 & {`TMR_CTRL_WIDTH{1'b1}});
   this.read(`TMR_STAT_ADDR);  // clear irq
-  this.write(`TMR_PSCR_ADDR, 32'd4 & {`TMR_PSCR_WIDTH{1'b1}});
+  this.write(`TMR_PSCR_ADDR, 32'd3 & {`TMR_PSCR_WIDTH{1'b1}});
   this.write(`TMR_CMP_ADDR, 32'hF & {`TMR_CMP_WIDTH{1'b1}});
   this.write(`TMR_CTRL_ADDR, 32'b1101 & {`TMR_CTRL_WIDTH{1'b1}});
   repeat (200) @(posedge this.apb4.pclk);
@@ -105,7 +103,7 @@ task automatic TMRTest::test_irq(input bit [31:0] run_times = 1000);
   super.test_irq();
   this.write(`TMR_CTRL_ADDR, 32'b0 & {`TMR_CTRL_WIDTH{1'b1}});
   this.read(`TMR_STAT_ADDR);  // clear irq
-  this.write(`TMR_PSCR_ADDR, 32'd4 & {`TMR_PSCR_WIDTH{1'b1}});
+  this.write(`TMR_PSCR_ADDR, 32'd3 & {`TMR_PSCR_WIDTH{1'b1}});
   this.write(`TMR_CMP_ADDR, -32'hF & {`TMR_CMP_WIDTH{1'b1}});
   this.write(`TMR_CTRL_ADDR, 32'b0101 & {`TMR_CTRL_WIDTH{1'b1}});
 
@@ -123,7 +121,7 @@ task automatic TMRTest::test_ext_clk(input bit [31:0] run_times = 10);
   repeat (200) @(posedge this.apb4.pclk);
   this.write(`TMR_CTRL_ADDR, 32'b0 & {`TMR_CTRL_WIDTH{1'b1}});
   this.read(`TMR_STAT_ADDR);  // clear irq
-  this.write(`TMR_PSCR_ADDR, 32'd4 & {`TMR_PSCR_WIDTH{1'b1}});
+  this.write(`TMR_PSCR_ADDR, 32'd3 & {`TMR_PSCR_WIDTH{1'b1}});
   this.write(`TMR_CMP_ADDR, 32'hF & {`TMR_CMP_WIDTH{1'b1}});
   this.write(`TMR_CTRL_ADDR, 32'b1111 & {`TMR_CTRL_WIDTH{1'b1}});
   repeat (200) @(posedge this.apb4.pclk);
@@ -131,7 +129,6 @@ endtask
 
 task automatic TMRTest::test_ext_cap(input bit [31:0] run_times = 10);
   $display("=== [test ext cap func] ===");
-
   repeat (200) @(posedge this.apb4.pclk);
   fork
     begin
@@ -145,7 +142,7 @@ task automatic TMRTest::test_ext_cap(input bit [31:0] run_times = 10);
     begin
       repeat (20) @(posedge this.apb4.pclk);
       this.write(`TMR_CMP_ADDR, 32'hFF & {`TMR_CMP_WIDTH{1'b1}});
-      this.write(`TMR_PSCR_ADDR, 32'd2 & {`TMR_PSCR_WIDTH{1'b1}});
+      this.write(`TMR_PSCR_ADDR, 32'd1 & {`TMR_PSCR_WIDTH{1'b1}});
       this.write(`TMR_CTRL_ADDR, 32'b0 & {`TMR_CTRL_WIDTH{1'b1}});
       this.read(`TMR_STAT_ADDR);  // clear irq
       this.write(`TMR_CTRL_ADDR, 32'b0011_0100 & {`TMR_CTRL_WIDTH{1'b1}});  // clr cap cnt
