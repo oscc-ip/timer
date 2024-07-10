@@ -35,8 +35,8 @@ module apb4_tmr (
   logic s_cap_gap_cnt_en;
   logic s_bit_ovie, s_bit_etr, s_bit_en, s_bit_idm;
   logic [2:0] s_bit_etm;
-  logic s_valid, s_done, s_inclk, s_tc_clk, s_ov_trg, s_ov_irq_trg, s_normal_mode;
-  logic s_norm_trg1, s_norm_trg2;
+  logic s_valid, s_done, s_in_trg, s_ext_trg, s_tc_trg, s_ov_trg, s_ov_irq_trg;
+  logic s_normal_mode, s_norm_trg1, s_norm_trg2;
   logic s_cap_in, s_cap_rise, s_cap_fall, s_cap_clr, s_cap_load, s_cap_en, s_cap_trg;
 
   assign s_apb4_addr     = apb4.paddr[5:2];
@@ -54,7 +54,7 @@ module apb4_tmr (
   assign s_bit_ovif      = s_tmr_stat_q[0];
   assign s_cap_clr       = s_bit_etm == `TMR_ETM_CLER;
   assign s_cap_load      = s_bit_etm == `TMR_ETM_LOAD;
-  assign s_tc_clk        = s_bit_etr ? tmr.exclk_i : s_inclk;
+  assign s_tc_trg        = s_bit_etr ? s_ext_trg : s_in_trg;
   assign s_normal_mode   = s_bit_en & s_done;
   assign tmr.irq_o       = s_bit_ovif;
 
@@ -69,13 +69,8 @@ module apb4_tmr (
   );
 
   assign s_tmr_pscr_en = s_apb4_wr_hdshk && s_apb4_addr == `TMR_PSCR;
-  always_comb begin
-    s_tmr_pscr_d = s_tmr_pscr_q;
-    if (s_tmr_pscr_en) begin
-      s_tmr_pscr_d = apb4.pwdata[`TMR_PSCR_WIDTH-1:0] < `TMR_PSCR_MIN_VAL ? `TMR_PSCR_MIN_VAL : apb4.pwdata[`TMR_PSCR_WIDTH-1:0];
-    end
-  end
-  dfferc #(`TMR_PSCR_WIDTH, `TMR_PSCR_MIN_VAL) u_tmr_pscr_dfferc (
+  assign s_tmr_pscr_d  = apb4.pwdata[`TMR_PSCR_WIDTH-1:0];
+  dffer #(`TMR_PSCR_WIDTH) u_tmr_pscr_dffer (
       apb4.pclk,
       apb4.presetn,
       s_tmr_pscr_en,
@@ -84,21 +79,31 @@ module apb4_tmr (
   );
 
   assign s_valid = s_apb4_wr_hdshk && s_apb4_addr == `TMR_PSCR && s_done;
-  clk_int_even_div_simple #(`TMR_PSCR_WIDTH) u_clk_int_even_div_simple (
+  clk_int_div_simple #(`TMR_PSCR_WIDTH) u_clk_int_div_simple (
       .clk_i      (apb4.pclk),
       .rst_n_i    (apb4.presetn),
       .div_i      (s_tmr_pscr_q),
       .div_valid_i(s_valid),
       .div_ready_o(),
       .div_done_o (s_done),
-      .clk_o      (s_inclk)
+      .clk_trg_o  (s_in_trg)
+  );
+
+  cdc_sync #(
+      .STAGE     (2),
+      .DATA_WIDTH(1)
+  ) u_ext_trg_cdc_sync (
+      apb4.pclk,
+      apb4.presetn,
+      tmr.exclk_i,
+      s_ext_trg
   );
 
   cdc_sync_det #(
       .STAGE     (2),
       .DATA_WIDTH(1)
-  ) u_cnt_cdc_sync (
-      s_tc_clk,
+  ) u_cnt_cdc_sync_det (
+      apb4.pclk,
       apb4.presetn,
       s_normal_mode,
       s_norm_trg1,
@@ -107,10 +112,10 @@ module apb4_tmr (
 
   // count up/down
   counter #(`TMR_CNT_WIDTH) u_tmr_cnt_counter (
-      .clk_i  (s_tc_clk),
+      .clk_i  (apb4.pclk),
       .rst_n_i(apb4.presetn),
       .clr_i  (~s_normal_mode),
-      .en_i   (s_normal_mode),
+      .en_i   (s_normal_mode && s_tc_trg),
       .load_i ((~s_norm_trg2 && s_norm_trg1) || s_ov_trg),
       .down_i (s_bit_idm),
       .dat_i  (s_tmr_cmp_q),
