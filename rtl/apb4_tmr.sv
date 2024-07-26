@@ -30,14 +30,14 @@ module apb4_tmr (
   logic [`TMR_CMP_WIDTH-1:0] s_tmr_cmp_d, s_tmr_cmp_q;
   logic s_tmr_cmp_en;
   logic [`TMR_STAT_WIDTH-1:0] s_tmr_stat_d, s_tmr_stat_q;
-  logic s_tmre_stat_en;
+  logic s_tmr_stat_en;
   logic s_cap_gap_cnt_d, s_cap_gap_cnt_q;
   logic s_cap_gap_cnt_en;
   logic s_bit_ovie, s_bit_etr, s_bit_en, s_bit_idm;
   logic [2:0] s_bit_etm;
   logic s_valid, s_done, s_in_trg, s_ext_trg, s_tc_trg, s_ov_trg, s_ov_irq_trg;
   logic s_normal_mode, s_norm_trg1, s_norm_trg2;
-  logic s_cap_in, s_cap_rise, s_cap_fall, s_cap_clr, s_cap_load, s_cap_en, s_cap_trg;
+  logic s_cap_in, s_cap_rise, s_cap_fall, s_cap_clr, s_cap_load, s_cap_en, s_bit_ovif, s_cap_trg;
 
   assign s_apb4_addr     = apb4.paddr[5:2];
   assign s_apb4_wr_hdshk = apb4.psel && apb4.penable && apb4.pwrite;

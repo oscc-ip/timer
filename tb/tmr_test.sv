@@ -110,6 +110,8 @@ task automatic TMRTest::test_irq(input bit [31:0] run_times = 1000);
 
   for (int i = 0; i < 10; i++) begin
     // wait (this.tmr.irq_o);
+    this.read(`TMR_PSCR_ADDR);
+    $display("PSCR: %d", super.rd_data);
     do begin
       this.read(`TMR_STAT_ADDR);
       if(super.rd_data == 32'd1) begin
