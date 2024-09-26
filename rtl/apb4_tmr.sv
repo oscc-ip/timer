@@ -86,6 +86,7 @@ module apb4_tmr (
       .div_valid_i(s_valid),
       .div_ready_o(),
       .div_done_o (s_done),
+      .clk_cnt_o  (),
       .clk_trg_o  (s_in_trg),
       .clk_o      ()
   );
