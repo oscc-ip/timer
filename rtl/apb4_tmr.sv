@@ -80,15 +80,17 @@ module apb4_tmr (
 
   assign s_valid = s_apb4_wr_hdshk && s_apb4_addr == `TMR_PSCR && s_done;
   clk_int_div_simple #(`TMR_PSCR_WIDTH) u_clk_int_div_simple (
-      .clk_i      (apb4.pclk),
-      .rst_n_i    (apb4.presetn),
-      .div_i      (s_tmr_pscr_q),
-      .div_valid_i(s_valid),
-      .div_ready_o(),
-      .div_done_o (s_done),
-      .clk_cnt_o  (),
-      .clk_trg_o  (s_in_trg),
-      .clk_o      ()
+      .clk_i        (apb4.pclk),
+      .rst_n_i      (apb4.presetn),
+      .div_i        (s_tmr_pscr_q),
+      .clk_init_i   (1'b0),
+      .div_valid_i  (s_valid),
+      .div_ready_o  (),
+      .div_done_o   (s_done),
+      .clk_cnt_o    (),
+      .clk_fir_trg_o(),
+      .clk_sec_trg_o(s_in_trg),
+      .clk_o        ()
   );
 
   cdc_sync #(
