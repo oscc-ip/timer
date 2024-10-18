@@ -62,7 +62,7 @@ task automatic TMRTest::test_wr_rd_reg(input bit [31:0] run_times = 1000);
 endtask
 
 task automatic TMRTest::test_clk_div(input bit [31:0] run_times = 10);
-  $display("=== [test tmr clk div] ===");
+  $display("%t === [test tmr clk div] ===", $time);
   this.read(`TMR_STAT_ADDR);  // clear irq
 
   repeat (200) @(posedge this.apb4.pclk);
@@ -80,7 +80,7 @@ task automatic TMRTest::test_clk_div(input bit [31:0] run_times = 10);
 endtask
 
 task automatic TMRTest::test_inc_cnt(input bit [31:0] run_times = 10);
-  $display("=== [test tmr inc cnt] ===");
+  $display("%t === [test tmr inc cnt] === ", $time);
   this.write(`TMR_CTRL_ADDR, 32'b0 & {`TMR_CTRL_WIDTH{1'b1}});
   this.read(`TMR_STAT_ADDR);  // clear irq
   this.write(`TMR_PSCR_ADDR, 32'd3 & {`TMR_PSCR_WIDTH{1'b1}});
@@ -90,10 +90,10 @@ task automatic TMRTest::test_inc_cnt(input bit [31:0] run_times = 10);
 endtask
 
 task automatic TMRTest::test_dec_cnt(input bit [31:0] run_times = 10);
-  $display("=== [test tmr dec cnt] ===");
+  $display("%t === [test tmr dec cnt] ===", $time);
   this.write(`TMR_CTRL_ADDR, 32'b0 & {`TMR_CTRL_WIDTH{1'b1}});
   this.read(`TMR_STAT_ADDR);  // clear irq
-  this.write(`TMR_PSCR_ADDR, 32'd3 & {`TMR_PSCR_WIDTH{1'b1}});
+  this.write(`TMR_PSCR_ADDR, 32'd0 & {`TMR_PSCR_WIDTH{1'b1}});
   this.write(`TMR_CMP_ADDR, 32'hF & {`TMR_CMP_WIDTH{1'b1}});
   this.write(`TMR_CTRL_ADDR, 32'b1101 & {`TMR_CTRL_WIDTH{1'b1}});
   repeat (200) @(posedge this.apb4.pclk);
