@@ -25,6 +25,8 @@ class TMRTest extends APB4Master;
   extern task automatic test_reset_reg();
   extern task automatic test_wr_rd_reg(input bit [31:0] run_times = 1000);
   extern task automatic test_clk_div(input bit [31:0] run_times = 10);
+  extern task automatic tmr_init(input bit [31:0] div, input bit [31:0] cmp);
+  extern task automatic tmr_run(input bit [31:0] times);
   extern task automatic test_inc_cnt(input bit [31:0] run_times = 10);
   extern task automatic test_dec_cnt(input bit [31:0] run_times = 10);
   extern task automatic test_irq(input bit [31:0] run_times = 1000);
@@ -79,8 +81,30 @@ task automatic TMRTest::test_clk_div(input bit [31:0] run_times = 10);
   end
 endtask
 
+task automatic TMRTest::tmr_init(input bit [31:0] div, input bit [31:0] cmp);
+  this.write(`TMR_CTRL_ADDR, 32'b0 & {`TMR_CTRL_WIDTH{1'b1}});
+
+  do begin
+    this.read(`TMR_STAT_ADDR);  // clear irq
+  end while (super.rd_data[0] == 1);
+
+  this.write(`TMR_PSCR_ADDR, (div - 32'd1) & {`TMR_PSCR_WIDTH{1'b1}});
+  this.write(`TMR_CMP_ADDR, (cmp - 32'd1) & {`TMR_CMP_WIDTH{1'b1}});
+endtask
+
+task automatic TMRTest::tmr_run(input bit [31:0] times);
+  this.write(`TMR_CTRL_ADDR, 32'b1101 & {`TMR_CTRL_WIDTH{1'b1}});
+  for (int i = 0; i < times; ++i) begin
+    do begin
+      this.read(`TMR_STAT_ADDR);  // clear irq
+    end while (super.rd_data[0] == 0);
+  end
+  this.write(`TMR_CTRL_ADDR, 32'b0 & {`TMR_CTRL_WIDTH{1'b1}});
+endtask
+
 task automatic TMRTest::test_inc_cnt(input bit [31:0] run_times = 10);
   $display("%t === [test tmr inc cnt] === ", $time);
+
   this.write(`TMR_CTRL_ADDR, 32'b0 & {`TMR_CTRL_WIDTH{1'b1}});
   this.read(`TMR_STAT_ADDR);  // clear irq
   this.write(`TMR_PSCR_ADDR, 32'd3 & {`TMR_PSCR_WIDTH{1'b1}});
@@ -91,11 +115,11 @@ endtask
 
 task automatic TMRTest::test_dec_cnt(input bit [31:0] run_times = 10);
   $display("%t === [test tmr dec cnt] ===", $time);
-  this.write(`TMR_CTRL_ADDR, 32'b0 & {`TMR_CTRL_WIDTH{1'b1}});
-  this.read(`TMR_STAT_ADDR);  // clear irq
-  this.write(`TMR_PSCR_ADDR, 32'd0 & {`TMR_PSCR_WIDTH{1'b1}});
-  this.write(`TMR_CMP_ADDR, 32'hF & {`TMR_CMP_WIDTH{1'b1}});
-  this.write(`TMR_CTRL_ADDR, 32'b1101 & {`TMR_CTRL_WIDTH{1'b1}});
+
+  // this.tmr_init(32'd1, 32'hF);
+  // this.tmr_run(6);
+  this.tmr_init(32'd1, 32'd100000);
+  this.tmr_run(6);
   repeat (200) @(posedge this.apb4.pclk);
 endtask
 
@@ -114,9 +138,9 @@ task automatic TMRTest::test_irq(input bit [31:0] run_times = 1000);
     $display("PSCR: %d", super.rd_data);
     do begin
       this.read(`TMR_STAT_ADDR);
-      if(super.rd_data == 32'd1) begin
-          $display("super.rd_data: %h", super.rd_data);
-          break;
+      if (super.rd_data == 32'd1) begin
+        $display("super.rd_data: %h", super.rd_data);
+        break;
       end
     end while (1);
     $display("%t trg tim:", $time);
